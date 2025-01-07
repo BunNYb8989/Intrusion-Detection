@@ -50,17 +50,27 @@ tls
 
 Task 4 Reconnaissance and Evasion Basics
 
+simple evasion techniques in the context of the first stage of the cyber kill chain, reconnaissance. First, run the following command against the target at MACHINE_IP
+
+```
+nmap -sV MACHINE_IP
+
+```
+
+The above command does not make use of any evasion techniques and as a result, most NIDS should be able to detect it with no issue, in fact, you should be able to verify this now by navigating to MACHINE_IP:8000/alerts. Suricata should have detected that some packets contain the default nmap user agent and triggered an alert. Suricata will have also detected the unusual HTTP requests that nmap makes to trigger responses from applications targeted for service versioning. Wazuh may have also detected the 400 error codes made during the course of the scan.
 
 
+We can use this information to test our first evasion strategy. By appending the following to change the user_agent ```http.useragent=<AGENT_HERE>,``` we can set the user agent used by nmap to a new value and partially evade detection. 
 
+```nmap -sV --script-args http.useragent="<USER AGENT HERE>" MACHINE_IP ```
 
+Note, that this strategy isn't perfect as both Suricata and Wazuh are more than capable of detecting the activity from the aggressive scans. Try running the following nmap command with the new User-Agent:
 
+``` nmap --script=vuln --script-args http.useragent="<USER AGENT HERE>" MACHINE_IP ```
 
+The above command tells nmap to use the vulnerability detection scripts against the target that can return a wealth of information. However, as you may have noticed they also generate a significant number of IDS alerts even when specifying a different User-Agent as a nmap probes for a large number of potential attack vectors. It is also possible to evade detection by using SYN (-sS) or "stealth" scan mode; however, this returns much less information as it will not perform any service or version detection, try running this now:
 
-
-
-
-
+``` nmap -sS MACHINE_IP ```
 
 
 

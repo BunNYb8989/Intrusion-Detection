@@ -246,7 +246,7 @@ docker
 Is an alert triggered by Wazuh when linPEAS is added to the system, if so what its severity?
 
 ```
-
+5
 ```
 
 
@@ -254,19 +254,30 @@ Is an alert triggered by Wazuh when linPEAS is added to the system, if so what i
 
 Task 10 Performing Privilege Escalation
 
+We can use these capabilities to gain root privileges quite easily try and run the following with the grafana-admin account:
 
+docker run -it --entrypoint=/bin/bash -v /:/mnt/ ghcr.io/jroo1053/ctfscoreapache:master
 
+This will spawn a container in interactive mode, overwrite the default entry-point to give us a shell, and mount the hosts file system to root.  From within this container, we can then edit one of the following files to gain elevated privileges:
 
+    /etc/group We could add the grafana-admin account to the root group. Note, that this file is covered by the HIDS
+    /etc/sudoers Editing this file would allow us to add the grafana-admin account to the sudoers list and thus, we would be able to run sudo to gain extra privileges. Again, this file is monitored by Wazuh.  In this case, we can perform this by running:
+    echo "grafana-admin ALL=(ALL) NOPASSWD: ALL" >>/mnt/etc/sudoers
 
+    We could add a new user to the system and join the root group via /etc/passwd . Again though, this activity is likely to be noticed by the HIDS
 
+Perform the privilege escalation and grab the flag in /root/
 
-
-
-
-
+```
+{SNEAK_ATTACK_CRITICAL}
+```
 
 Task 11 Establishing Persistence
 
+The first option which, is arguably the most straightforward is to add a public key that we control to the authorized_keys file at /root/.ssh/. This would allow us to connect to the host via SSH without needing to run the privilege escalation exploit every time and without relying on the password for the compromised account not changing. This methodology is very common among botnets as it's both reliable and very simple to implement as pretty much all Linux distributions indented for server use run an Open-SSH service by default. 
+
+
+Try this now, a valid key pair can be generated for the attack box by running ssh-keygen. Once this key is added to the authorized_keys file in /root/.ssh/ you should be able to gain remote access to root whenever it's needed, simple right? Well, unfortunately, this tactic has one big disadvantage as it is highly detectable.
 
 
 
